@@ -16,9 +16,11 @@ const STATUS_FILTERS: (ClaimStatus | 'All')[] = ['All', 'Draft', 'Pending', 'Sub
 
 export default function BillingScreen() {
   const router = useRouter();
-  const { claims } = useApp();
+  const { claims, currentUser } = useApp();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ClaimStatus | 'All'>('All');
+
+  const canEdit = currentUser.role !== 'Provider';
 
   const filtered = useMemo(() => {
     let list = claims;
@@ -37,17 +39,58 @@ export default function BillingScreen() {
 
   const totalCharged = filtered.reduce((s, c) => s + c.totalCharge, 0);
   const totalPaid = filtered.reduce((s, c) => s + c.paidAmount, 0);
+  const deniedCount = claims.filter(c => c.status === 'Denied').length;
 
   return (
     <View style={styles.root}>
       <Header
         title="Medical Billing"
         subtitle="Claims & Revenue Cycle"
-        rightAction={{ icon: 'add', label: 'New Claim', onPress: () => router.push('/new-claim') }}
+        rightAction={canEdit ? { icon: 'add', label: 'New Claim', onPress: () => router.push('/new-claim') } : undefined}
       />
 
       <View style={styles.toolbar}>
         <SearchBar value={search} onChangeText={setSearch} placeholder="Search patient, claim #, insurer..." />
+      </View>
+
+      {/* Quick Actions */}
+      <View style={styles.quickActions}>
+        <Pressable
+          style={[styles.qaBtn, { backgroundColor: Colors.success + '15', borderColor: Colors.success + '40' }]}
+          onPress={() => router.push('/payment-posting')}
+        >
+          <View style={[styles.qaIcon, { backgroundColor: Colors.success }]}>
+            <Text style={styles.qaIconText}>$</Text>
+          </View>
+          <Text style={[styles.qaLabel, { color: Colors.success }]}>Post{'\n'}Payment</Text>
+        </Pressable>
+        <Pressable
+          style={[styles.qaBtn, { backgroundColor: Colors.warning + '15', borderColor: Colors.warning + '40' }]}
+          onPress={() => router.push('/ar-followup')}
+        >
+          <View style={[styles.qaIcon, { backgroundColor: Colors.warning }]}>
+            <Text style={styles.qaIconText}>{deniedCount}</Text>
+          </View>
+          <Text style={[styles.qaLabel, { color: Colors.warning }]}>AR{'\n'}Follow-up</Text>
+        </Pressable>
+        <Pressable
+          style={[styles.qaBtn, { backgroundColor: Colors.info + '15', borderColor: Colors.info + '40' }]}
+          onPress={() => router.push('/eligibility')}
+        >
+          <View style={[styles.qaIcon, { backgroundColor: Colors.info }]}>
+            <Text style={styles.qaIconText}>✓</Text>
+          </View>
+          <Text style={[styles.qaLabel, { color: Colors.info }]}>Eligibility{'\n'}Check</Text>
+        </Pressable>
+        <Pressable
+          style={[styles.qaBtn, { backgroundColor: Colors.primary + '15', borderColor: Colors.primary + '40' }]}
+          onPress={() => router.push('/new-claim')}
+        >
+          <View style={[styles.qaIcon, { backgroundColor: Colors.primary }]}>
+            <Text style={styles.qaIconText}>+</Text>
+          </View>
+          <Text style={[styles.qaLabel, { color: Colors.primary }]}>New{'\n'}Claim</Text>
+        </Pressable>
       </View>
 
       <View style={styles.summary}>
@@ -113,6 +156,22 @@ export default function BillingScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: Colors.background },
   toolbar: { backgroundColor: Colors.navBg, paddingHorizontal: Spacing.md, paddingBottom: Spacing.md },
+
+  quickActions: {
+    flexDirection: 'row', gap: 10, paddingHorizontal: Spacing.md, paddingVertical: 12,
+    backgroundColor: Colors.surface, borderBottomWidth: 1, borderBottomColor: Colors.divider,
+  },
+  qaBtn: {
+    flex: 1, alignItems: 'center', gap: 4, paddingVertical: 10,
+    borderRadius: Radius.lg, borderWidth: 1,
+  },
+  qaIcon: {
+    width: 32, height: 32, borderRadius: 16,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  qaIconText: { fontSize: FontSize.sm, fontWeight: '800', color: '#fff' },
+  qaLabel: { fontSize: 10, fontWeight: '700', textAlign: 'center', lineHeight: 14 },
+
   summary: {
     flexDirection: 'row',
     backgroundColor: Colors.surface,

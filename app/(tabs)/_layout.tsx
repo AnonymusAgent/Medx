@@ -3,9 +3,12 @@ import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Platform } from 'react-native';
 import { Colors } from '@/constants/theme';
+import { useApp } from '@/hooks/useApp';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  const { currentUser } = useApp();
+  const role = currentUser.role;
 
   const tabBarStyle = {
     height: Platform.select({
@@ -23,6 +26,12 @@ export default function TabLayout() {
     borderTopWidth: 1,
     borderTopColor: '#1E2A3A',
   };
+
+  // Role-based tab visibility
+  const showPatients = role !== 'Provider';
+  const showBilling = role !== 'Provider';
+  const showReports = role === 'Admin' || role === 'Biller';
+  const showSettings = role === 'Admin';
 
   return (
     <Tabs
@@ -46,6 +55,7 @@ export default function TabLayout() {
         options={{
           title: 'Patients',
           tabBarIcon: ({ color, size }) => <MaterialIcons name="people" size={size} color={color} />,
+          tabBarItemStyle: showPatients ? {} : { display: 'none' },
         }}
       />
       <Tabs.Screen
@@ -53,6 +63,7 @@ export default function TabLayout() {
         options={{
           title: 'Billing',
           tabBarIcon: ({ color, size }) => <MaterialIcons name="receipt-long" size={size} color={color} />,
+          tabBarItemStyle: showBilling ? {} : { display: 'none' },
         }}
       />
       <Tabs.Screen
@@ -67,6 +78,7 @@ export default function TabLayout() {
         options={{
           title: 'Reports',
           tabBarIcon: ({ color, size }) => <MaterialIcons name="bar-chart" size={size} color={color} />,
+          tabBarItemStyle: showReports ? {} : { display: 'none' },
         }}
       />
       <Tabs.Screen
@@ -74,6 +86,7 @@ export default function TabLayout() {
         options={{
           title: 'Settings',
           tabBarIcon: ({ color, size }) => <MaterialIcons name="settings" size={size} color={color} />,
+          tabBarItemStyle: showSettings ? {} : { display: 'none' },
         }}
       />
     </Tabs>
