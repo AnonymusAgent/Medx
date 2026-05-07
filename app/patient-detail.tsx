@@ -143,6 +143,24 @@ export default function PatientDetailScreen() {
           </>
         ) : null}
 
+        {/* Action Buttons */}
+        <View style={styles.actionBtnRow}>
+          <Pressable
+            style={styles.actionBtn}
+            onPress={() => router.push({ pathname: '/patient-statement', params: { patientId: patient.id } })}
+          >
+            <MaterialIcons name="description" size={18} color={Colors.primary} />
+            <Text style={styles.actionBtnText}>View Statement</Text>
+          </Pressable>
+          <Pressable
+            style={styles.actionBtn}
+            onPress={() => router.push({ pathname: '/eligibility', params: { patientId: patient.id } })}
+          >
+            <MaterialIcons name="verified" size={18} color={Colors.success} />
+            <Text style={[styles.actionBtnText, { color: Colors.success }]}>Check Eligibility</Text>
+          </Pressable>
+        </View>
+
         {/* Claims History */}
         <Text style={styles.sectionTitle}>Claims History ({patientClaims.length})</Text>
         {patientClaims.length === 0 ? (
@@ -226,4 +244,11 @@ const styles = StyleSheet.create({
   insValue: { fontSize: FontSize.sm, fontWeight: '500', color: Colors.textPrimary },
   noClaims: { backgroundColor: Colors.surface, borderRadius: Radius.lg, padding: Spacing.md, alignItems: 'center' },
   noClaimsText: { color: Colors.textMuted, fontSize: FontSize.sm },
+  actionBtnRow: { flexDirection: 'row', gap: 10 },
+  actionBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: Colors.surface, borderRadius: Radius.lg, paddingVertical: 14, gap: 8,
+    borderWidth: 1.5, borderColor: Colors.primary + '50',
+  },
+  actionBtnText: { fontSize: FontSize.sm, fontWeight: '700', color: Colors.primary },
 });

@@ -14,6 +14,30 @@ import { ClaimStatus } from '@/constants/mockData';
 
 const STATUS_FILTERS: (ClaimStatus | 'All')[] = ['All', 'Draft', 'Pending', 'Submitted', 'Paid', 'Denied', 'Partial'];
 
+const QUICK_ACTIONS = [
+  { icon: 'attach-money', label: 'Post\nPayment', route: '/payment-posting', color: 'success' as const, symbol: '$' },
+  { icon: 'account-balance', label: 'AR\nFollow-up', route: '/ar-followup', color: 'warning' as const, symbol: '⏱' },
+  { icon: 'verified', label: 'Eligibility\nCheck', route: '/eligibility', color: 'info' as const, symbol: '✓' },
+  { icon: 'cancel', label: 'Denial\nMgmt', route: '/denial-management', color: 'danger' as const, symbol: '✗' },
+  { icon: 'add-box', label: 'New\nClaim', route: '/new-claim', color: 'primary' as const, symbol: '+' },
+] as const;
+
+const COLOR_MAP = {
+  success: Colors.success,
+  warning: Colors.warning,
+  info: Colors.info,
+  danger: Colors.danger,
+  primary: Colors.primary,
+};
+
+const LIGHT_MAP = {
+  success: Colors.successLight,
+  warning: Colors.warningLight,
+  info: Colors.infoLight,
+  danger: Colors.dangerLight,
+  primary: Colors.primaryLight,
+};
+
 export default function BillingScreen() {
   const router = useRouter();
   const { claims, currentUser } = useApp();
@@ -54,44 +78,25 @@ export default function BillingScreen() {
       </View>
 
       {/* Quick Actions */}
-      <View style={styles.quickActions}>
-        <Pressable
-          style={[styles.qaBtn, { backgroundColor: Colors.success + '15', borderColor: Colors.success + '40' }]}
-          onPress={() => router.push('/payment-posting')}
-        >
-          <View style={[styles.qaIcon, { backgroundColor: Colors.success }]}>
-            <Text style={styles.qaIconText}>$</Text>
-          </View>
-          <Text style={[styles.qaLabel, { color: Colors.success }]}>Post{'\n'}Payment</Text>
-        </Pressable>
-        <Pressable
-          style={[styles.qaBtn, { backgroundColor: Colors.warning + '15', borderColor: Colors.warning + '40' }]}
-          onPress={() => router.push('/ar-followup')}
-        >
-          <View style={[styles.qaIcon, { backgroundColor: Colors.warning }]}>
-            <Text style={styles.qaIconText}>{deniedCount}</Text>
-          </View>
-          <Text style={[styles.qaLabel, { color: Colors.warning }]}>AR{'\n'}Follow-up</Text>
-        </Pressable>
-        <Pressable
-          style={[styles.qaBtn, { backgroundColor: Colors.info + '15', borderColor: Colors.info + '40' }]}
-          onPress={() => router.push('/eligibility')}
-        >
-          <View style={[styles.qaIcon, { backgroundColor: Colors.info }]}>
-            <Text style={styles.qaIconText}>✓</Text>
-          </View>
-          <Text style={[styles.qaLabel, { color: Colors.info }]}>Eligibility{'\n'}Check</Text>
-        </Pressable>
-        <Pressable
-          style={[styles.qaBtn, { backgroundColor: Colors.primary + '15', borderColor: Colors.primary + '40' }]}
-          onPress={() => router.push('/new-claim')}
-        >
-          <View style={[styles.qaIcon, { backgroundColor: Colors.primary }]}>
-            <Text style={styles.qaIconText}>+</Text>
-          </View>
-          <Text style={[styles.qaLabel, { color: Colors.primary }]}>New{'\n'}Claim</Text>
-        </Pressable>
-      </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.qaScroll}
+        contentContainerStyle={styles.qaContent}
+      >
+        {QUICK_ACTIONS.map(action => (
+          <Pressable
+            key={action.route}
+            style={[styles.qaBtn, { backgroundColor: COLOR_MAP[action.color] + '15', borderColor: COLOR_MAP[action.color] + '50' }]}
+            onPress={() => router.push(action.route as any)}
+          >
+            <View style={[styles.qaIcon, { backgroundColor: COLOR_MAP[action.color] }]}>
+              <Text style={styles.qaIconText}>{action.symbol}</Text>
+            </View>
+            <Text style={[styles.qaLabel, { color: COLOR_MAP[action.color] }]}>{action.label}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
 
       <View style={styles.summary}>
         <View style={styles.summaryItem}>
@@ -102,6 +107,11 @@ export default function BillingScreen() {
         <View style={styles.summaryItem}>
           <Text style={styles.summaryLabel}>Total Paid</Text>
           <Text style={[styles.summaryValue, { color: Colors.success }]}>${totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+        </View>
+        <View style={styles.summaryDivider} />
+        <View style={styles.summaryItem}>
+          <Text style={styles.summaryLabel}>Denied</Text>
+          <Text style={[styles.summaryValue, { color: deniedCount > 0 ? Colors.danger : Colors.textPrimary }]}>{deniedCount}</Text>
         </View>
         <View style={styles.summaryDivider} />
         <View style={styles.summaryItem}>
@@ -157,16 +167,14 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: Colors.background },
   toolbar: { backgroundColor: Colors.navBg, paddingHorizontal: Spacing.md, paddingBottom: Spacing.md },
 
-  quickActions: {
-    flexDirection: 'row', gap: 10, paddingHorizontal: Spacing.md, paddingVertical: 12,
-    backgroundColor: Colors.surface, borderBottomWidth: 1, borderBottomColor: Colors.divider,
-  },
+  qaScroll: { flexGrow: 0, backgroundColor: Colors.surface, borderBottomWidth: 1, borderBottomColor: Colors.divider },
+  qaContent: { paddingHorizontal: Spacing.md, paddingVertical: 12, gap: 10 },
   qaBtn: {
-    flex: 1, alignItems: 'center', gap: 4, paddingVertical: 10,
-    borderRadius: Radius.lg, borderWidth: 1,
+    alignItems: 'center', gap: 5, paddingVertical: 10, paddingHorizontal: 14,
+    borderRadius: Radius.lg, borderWidth: 1, minWidth: 72,
   },
   qaIcon: {
-    width: 32, height: 32, borderRadius: 16,
+    width: 34, height: 34, borderRadius: 17,
     justifyContent: 'center', alignItems: 'center',
   },
   qaIconText: { fontSize: FontSize.sm, fontWeight: '800', color: '#fff' },

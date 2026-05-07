@@ -20,6 +20,9 @@ export default function RootLayout() {
               <Stack.Screen name="payment-posting" />
               <Stack.Screen name="ar-followup" />
               <Stack.Screen name="eligibility" />
+              <Stack.Screen name="soap-notes" />
+              <Stack.Screen name="patient-statement" />
+              <Stack.Screen name="denial-management" />
             </Stack>
           </AppProvider>
         </AuthProvider>

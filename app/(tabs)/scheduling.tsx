@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import {
   View,
@@ -12,6 +13,7 @@ import { Header, AppointmentCard } from '@/components';
 import { useApp } from '@/hooks/useApp';
 import { MOCK_PROVIDERS } from '@/constants/mockData';
 import { useAlert } from '@/template';
+import { useRouter } from 'expo-router';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -34,6 +36,7 @@ function toISO(d: Date) {
 export default function SchedulingScreen() {
   const { appointments } = useApp();
   const { showAlert } = useAlert();
+  const router = useRouter();
   const today = new Date();
   const [selectedDate, setSelectedDate] = useState(toISO(today));
   const [providerFilter, setProviderFilter] = useState('All');
@@ -149,7 +152,14 @@ export default function SchedulingScreen() {
             <AppointmentCard
               key={apt.id}
               appointment={apt}
-              onPress={() => showAlert(apt.patientName, `${apt.type} · ${apt.time} · ${apt.providerName}`)}
+              onPress={() => showAlert(
+                apt.patientName,
+                `${apt.type} · ${apt.time} · ${apt.providerName}\nRoom: ${apt.room ?? 'TBD'}`,
+                [
+                  { text: 'SOAP Note', onPress: () => router.push({ pathname: '/soap-notes', params: { appointmentId: apt.id, patientId: apt.patientId, patientName: apt.patientName, providerId: apt.providerId, providerName: apt.providerName, visitDate: apt.date } }) },
+                  { text: 'Dismiss', style: 'cancel' },
+                ]
+              )}
             />
           ))
         )}
